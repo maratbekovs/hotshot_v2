@@ -7,8 +7,8 @@
     <form method="post">
         <div class="vote-container">
             <div class="photo-box">
-                <button name="choice" value="{{ photo1 }}" class="vote-btn">
-                    <img src="{{ url_for('static', filename='images/' + photo1) }}" alt="Фото 1">
+                <button name="choice" value="{{ photo1.photo_id }}" class="vote-btn">
+                    <img src="{{ url_for('get_image', photo_id=photo1.photo_id) }}" alt="Фото 1">
                 </button>
             </div>
 
@@ -17,8 +17,8 @@
             </div>
 
             <div class="photo-box">
-                <button name="choice" value="{{ photo2 }}" class="vote-btn">
-                    <img src="{{ url_for('static', filename='images/' + photo2) }}" alt="Фото 2">
+                <button name="choice" value="{{ photo2.photo_id }}" class="vote-btn">
+                    <img src="{{ url_for('get_image', photo_id=photo2.photo_id) }}" alt="Фото 2">
                 </button>
             </div>
         </div>

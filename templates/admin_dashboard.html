@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="admin-dashboard-page">
+    <div class="dashboard-header">
+        <h2>Панель модерации</h2>
+        <p>Найдено фото на рассмотрении: {{ photos|length }}</p>
+    </div>
+
+    {% if not photos %}
+    <div class="no-photos-message">
+        <i class="fa-solid fa-check-circle"></i>
+        <p>Отлично! Все фотографии проверены.</p>
+    </div>
+    {% else %}
+    <div class="pending-photos-grid">
+        {% for photo in photos %}
+        <div class="pending-photo-card">
+            <div class="photo-preview">
+                <img src="{{ url_for('get_image', photo_id=photo.photo_id) }}" alt="{{ photo.file_name }}">
+            </div>
+            <div class="photo-info">
+                <span>{{ photo.file_name }}</span>
+            </div>
+            <div class="moderation-actions">
+                <a href="{{ url_for('approve_photo', photo_id=photo.photo_id) }}" class="btn-approve">
+                    <i class="fa-solid fa-check"></i> Одобрить
+                </a>
+                <a href="{{ url_for('reject_photo', photo_id=photo.photo_id) }}" class="btn-reject">
+                    <i class="fa-solid fa-trash"></i> Отклонить
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

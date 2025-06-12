@@ -19,6 +19,13 @@
                 <li><a href="{{ url_for('vote') }}"><i class="fa-solid fa-thumbs-up"></i> Голосовать</a></li>
                 <li><a href="{{ url_for('upload') }}"><i class="fa-solid fa-cloud-arrow-up"></i> Загрузить</a></li>
                 <li><a href="{{ url_for('top') }}"><i class="fa-solid fa-trophy"></i> Топ-10</a></li>
+
+                {# --- ИСПРАВЛЕННЫЙ БЛОК ДЛЯ АДМИНА --- #}
+                {% if session.is_admin %}
+                <li><a href="{{ url_for('admin_dashboard') }}"><i class="fa-solid fa-user-shield"></i> Админ</a></li>
+                <li><a href="{{ url_for('admin_logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Выйти</a></li>
+                {% endif %}
+                {# --- КОНЕЦ БЛОКА --- #}
             </ul>
         </nav>
     </header>
