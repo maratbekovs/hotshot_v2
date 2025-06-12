@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HotShot v2</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <i class="fa-solid fa-fire"></i>
+            <h1>HotShot v2</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Главная</a></li>
+                <li><a href="{{ url_for('vote') }}"><i class="fa-solid fa-thumbs-up"></i> Голосовать</a></li>
+                <li><a href="{{ url_for('upload') }}"><i class="fa-solid fa-cloud-arrow-up"></i> Загрузить</a></li>
+                <li><a href="{{ url_for('top') }}"><i class="fa-solid fa-trophy"></i> Топ-10</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} animate-pop">
+                <span>{{ message }}</span>
+                <i class="fa-solid fa-xmark close-btn"></i>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>HotShot v2 © 2023 | Анонимное голосование</p>
+    </footer>
+
+    <script>
+        document.querySelectorAll('.close-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.target.closest('.alert').style.opacity = '0';
+                setTimeout(() => {
+                    e.target.closest('.alert').remove();
+                }, 300);
+            });
+        });
+
+        setTimeout(() => {
+            document.querySelectorAll('.alert').forEach(alert => {
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 300);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

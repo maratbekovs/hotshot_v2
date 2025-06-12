@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="vote-page">
+    <h2>Выбери лучший снимок</h2>
+
+    <form method="post">
+        <div class="vote-container">
+            <div class="photo-box">
+                <button name="choice" value="{{ photo1 }}" class="vote-btn">
+                    <img src="{{ url_for('static', filename='images/' + photo1) }}" alt="Фото 1">
+                </button>
+            </div>
+
+            <div class="vs-center">
+                <div class="vs-label">VS</div>
+            </div>
+
+            <div class="photo-box">
+                <button name="choice" value="{{ photo2 }}" class="vote-btn">
+                    <img src="{{ url_for('static', filename='images/' + photo2) }}" alt="Фото 2">
+                </button>
+            </div>
+        </div>
+
+        <div class="skip-container">
+            <button name="choice" value="skip" class="skip-btn">
+                Пропустить <i class="fa-solid fa-forward"></i>
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

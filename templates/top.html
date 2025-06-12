@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="top-page">
+    <h2>Топ-10 Фото</h2>
+
+    <!-- Топ-1 -->
+    {% if top_photos and top_photos[0] %}
+    <div class="top1-container">
+        <div class="top1-crown">
+            <i class="fas fa-crown"></i>
+        </div>
+        <div class="top1-card">
+            <img src="{{ url_for('static', filename='images/' + top_photos[0][0]) }}" alt="Топ-1 Фото">
+            <div class="top1-votes">{{ top_photos[0][1] }} голосов</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Топ-2..10 -->
+    <div class="top-list">
+        {% for file, votes in top_photos[1:] %}
+        <div class="top-item">
+            <div class="top-rank">{{ loop.index + 1 }}</div>
+            <img src="{{ url_for('static', filename='images/' + file) }}" alt="Фото">
+            <p class="top-votes">{{ votes }} голосов</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

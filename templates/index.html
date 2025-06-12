@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="instructions">
+    <h2>Как это работает?</h2>
+    <div class="steps">
+        <div class="step">
+            <div class="step-icon">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+            <h3>Загрузи фото</h3>
+            <p>Перейди в раздел "Загрузить" и добавь свои лучшие фотографии</p>
+        </div>
+
+        <div class="step">
+            <div class="step-icon">
+                <i class="fa-solid fa-thumbs-up"></i>
+            </div>
+            <h3>Голосуй</h3>
+            <p>Выбирай лучшие снимки из случайных пар в разделе "Голосовать"</p>
+        </div>
+
+        <div class="step">
+            <div class="step-icon">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+            <h3>Следи за топом</h3>
+            <p>Смотри самые популярные фото в разделе "Топ-10"</p>
+        </div>
+    </div>
+
+    <div class="call-to-action">
+        <a href="{{ url_for('vote') }}" class="cta-button">
+            Начать голосовать <i class="fa-solid fa-arrow-right"></i>
+        </a>
+    </div>
+</div>
+{% endblock %}
