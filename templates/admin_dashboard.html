@@ -3,36 +3,38 @@
 {% block content %}
 <div class="admin-dashboard-page">
     <div class="dashboard-header">
-        <h2>Панель модерации</h2>
-        <p>Найдено фото на рассмотрении: {{ photos|length }}</p>
+        <h2>Панель администратора</h2>
+        <a href="{{ url_for('reset_votes_route') }}" class="auth-btn reset-btn" onclick="return confirm('Вы уверены, что хотите сбросить все голоса? Это действие необратимо.');">
+            <i class="fa-solid fa-bomb"></i> Сбросить все голоса
+        </a>
     </div>
 
-    {% if not photos %}
-    <div class="no-photos-message">
-        <i class="fa-solid fa-check-circle"></i>
-        <p>Отлично! Все фотографии проверены.</p>
-    </div>
-    {% else %}
-    <div class="pending-photos-grid">
-        {% for photo in photos %}
-        <div class="pending-photo-card">
-            <div class="photo-preview">
-                <img src="{{ url_for('get_image', photo_id=photo.photo_id) }}" alt="{{ photo.file_name }}">
+    <div class="profile-card">
+        <h3><i class="fa-solid fa-clock"></i> Фото на модерации ({{ photos|length }})</h3>
+        {% if photos %}
+        <div class="pending-photos-grid">
+            {% for photo in photos %}
+            <div class="pending-photo-card">
+                <div class="photo-preview">
+                    <img src="{{ url_for('get_contest_photo', photo_id=photo.photo_id) }}" alt="Фото на модерации">
+                </div>
+                <div class="photo-info">
+                    Загрузил: <a href="{{ url_for('view_profile', user_id=photo.user_id) }}">{{ photo.username }}</a>
+                </div>
+                <div class="moderation-actions">
+                    <a href="{{ url_for('approve_photo', photo_id=photo.photo_id) }}" class="btn-approve">
+                        <i class="fa-solid fa-check"></i> Одобрить
+                    </a>
+                    <a href="{{ url_for('reject_photo', photo_id=photo.photo_id) }}" class="btn-reject" onclick="return confirm('Удалить это фото?');">
+                        <i class="fa-solid fa-trash"></i> Отклонить
+                    </a>
+                </div>
             </div>
-            <div class="photo-info">
-                <span>{{ photo.file_name }}</span>
-            </div>
-            <div class="moderation-actions">
-                <a href="{{ url_for('approve_photo', photo_id=photo.photo_id) }}" class="btn-approve">
-                    <i class="fa-solid fa-check"></i> Одобрить
-                </a>
-                <a href="{{ url_for('reject_photo', photo_id=photo.photo_id) }}" class="btn-reject">
-                    <i class="fa-solid fa-trash"></i> Отклонить
-                </a>
-            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
+        {% else %}
+        <p>Новых фотографий на проверку нет.</p>
+        {% endif %}
     </div>
-    {% endif %}
 </div>
 {% endblock %}

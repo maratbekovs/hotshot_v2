@@ -3,34 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HotShot v2</title>
+    <title>HotShot v3</title>
+    <!-- Основные стили -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Иконки Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Стили для обрезки изображений (Cropper.js) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
 </head>
 <body>
     <header>
-        <div class="logo">
-            <i class="fa-solid fa-fire"></i>
-            <h1>HotShot v2</h1>
-        </div>
+        <a href="{{ url_for('landing') }}" class="logo-link">
+            <div class="logo">
+                <i class="fa-solid fa-fire"></i>
+                <h1>HotShot v3</h1>
+            </div>
+        </a>
         <nav>
             <ul>
-                <li><a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Главная</a></li>
-                <li><a href="{{ url_for('vote') }}"><i class="fa-solid fa-thumbs-up"></i> Голосовать</a></li>
-                <li><a href="{{ url_for('upload') }}"><i class="fa-solid fa-cloud-arrow-up"></i> Загрузить</a></li>
-                <li><a href="{{ url_for('top') }}"><i class="fa-solid fa-trophy"></i> Топ-10</a></li>
-
-                {# --- ИСПРАВЛЕННЫЙ БЛОК ДЛЯ АДМИНА --- #}
-                {% if session.is_admin %}
-                <li><a href="{{ url_for('admin_dashboard') }}"><i class="fa-solid fa-user-shield"></i> Админ</a></li>
-                <li><a href="{{ url_for('admin_logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Выйти</a></li>
+                {% if 'user_id' in session %}
+                    <!-- Меню для авторизованных пользователей -->
+                    <li><a href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Главная</a></li>
+                    <li><a href="{{ url_for('find_users') }}"><i class="fa-solid fa-users"></i> Найти друзей</a></li>
+                    <li><a href="{{ url_for('vote') }}"><i class="fa-solid fa-thumbs-up"></i> Голосовать</a></li>
+                    <li><a href="{{ url_for('top') }}"><i class="fa-solid fa-trophy"></i> Топ-10</a></li>
+                    <li><a href="{{ url_for('messages_list') }}"><i class="fa-solid fa-comments"></i> Сообщения
+                        {% if unread_messages > 0 %}
+                            <span class="notification-badge">{{ unread_messages }}</span>
+                        {% endif %}
+                    </a></li>
+                    <li><a href="{{ url_for('notifications') }}"><i class="fa-solid fa-bell"></i> Уведомления
+                        {% if unread_notifications > 0 %}
+                            <span class="notification-badge danger">{{ unread_notifications }}</span>
+                        {% endif %}
+                    </a></li>
+                    <li><a href="{{ url_for('profile') }}"><i class="fa-solid fa-user"></i> Профиль</a></li>
+                    {% if session.is_admin %}
+                    <li><a href="{{ url_for('admin_dashboard') }}"><i class="fa-solid fa-user-shield"></i> Админка</a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Выйти</a></li>
+                {% else %}
+                    <!-- Меню для гостей -->
+                    <li><a href="{{ url_for('login') }}"><i class="fa-solid fa-right-to-bracket"></i> Войти</a></li>
+                    <li><a href="{{ url_for('register') }}"><i class="fa-solid fa-user-plus"></i> Регистрация</a></li>
                 {% endif %}
-                {# --- КОНЕЦ БЛОКА --- #}
             </ul>
         </nav>
     </header>
 
     <main class="container">
+        {# Блок для отображения флеш-сообщений #}
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
             {% for category, message in messages %}
@@ -46,25 +68,226 @@
     </main>
 
     <footer>
-        <p>HotShot v2 © 2023 | Анонимное голосование</p>
+        <p>HotShot v3 © 2025</p>
     </footer>
 
+    <!-- Скрипты -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
     <script>
+        // Скрипт для закрытия уведомлений
         document.querySelectorAll('.close-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                e.target.closest('.alert').style.opacity = '0';
+                const alert = e.target.closest('.alert');
+                alert.style.opacity = '0';
                 setTimeout(() => {
-                    e.target.closest('.alert').remove();
+                    alert.remove();
                 }, 300);
             });
         });
 
+        // Автоматическое скрытие уведомлений через 5 секунд
         setTimeout(() => {
             document.querySelectorAll('.alert').forEach(alert => {
                 alert.style.opacity = '0';
                 setTimeout(() => alert.remove(), 300);
             });
         }, 5000);
+
+        // --- Основной скрипт для динамических элементов ---
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- Логика для вкладок в форме создания поста ---
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const creatorContents = document.querySelectorAll('.creator-content');
+            if (tabButtons.length > 0) {
+                tabButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        tabButtons.forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+
+                        creatorContents.forEach(content => {
+                            content.classList.remove('active');
+                            if (content.id === button.dataset.tab) {
+                                content.classList.add('active');
+                            }
+                        });
+                    });
+                });
+            }
+
+            // --- Улучшенная функция для инициализации модальных окон с Cropper.js ---
+            function initializeModal(modalId, triggerBtnId, imageToCropId, hiddenFileInput, saveBtnId, formToSubmit, cropDataInputs, onSaveCallback) {
+                const modal = document.getElementById(modalId);
+                const triggerBtn = document.getElementById(triggerBtnId);
+                const imageToCrop = document.getElementById(imageToCropId);
+                const saveBtn = document.getElementById(saveBtnId);
+                let cropper;
+
+                if (!modal || !triggerBtn) return;
+
+                const openFileInput = () => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.onchange = e => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+
+                        const reader = new FileReader();
+                        reader.onload = event => {
+                            imageToCrop.src = event.target.result;
+                            modal.style.display = 'block';
+                            if (cropper) cropper.destroy();
+                            cropper = new Cropper(imageToCrop, { aspectRatio: 1, viewMode: 1, background: false });
+
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(file);
+                            if (hiddenFileInput) hiddenFileInput.files = dataTransfer.files;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                    input.click();
+                };
+
+                triggerBtn.addEventListener('click', openFileInput);
+
+                const closeModal = () => modal.style.display = 'none';
+                modal.querySelector('.close-modal').onclick = closeModal;
+                window.onclick = event => { if (event.target == modal) closeModal(); };
+
+                saveBtn.addEventListener('click', () => {
+                    if (!cropper) return;
+                    const data = cropper.getData(true);
+                    cropDataInputs.x.value = data.x;
+                    cropDataInputs.y.value = data.y;
+                    cropDataInputs.width.value = data.width;
+                    cropDataInputs.height.value = data.height;
+
+                    if (onSaveCallback) {
+                        onSaveCallback(cropper);
+                    }
+
+                    if (formToSubmit) {
+                        formToSubmit.submit();
+                    } else {
+                        closeModal();
+                    }
+                });
+            }
+
+            // Инициализация модального окна для АВАТАРА
+            initializeModal(
+                'cropperModal', 'editAvatarBtn', 'imageToCrop', document.getElementById('hiddenFileInput'), 'saveCropBtn',
+                document.getElementById('cropForm'),
+                {
+                    x: document.getElementById('cropX'), y: document.getElementById('cropY'),
+                    width: document.getElementById('cropWidth'), height: document.getElementById('cropHeight')
+                },
+                null // Нет колбэка
+            );
+
+            // Инициализация модального окна для ФОТО ГАЛЕРЕИ
+            const galleryPhotoPreviewContainer = document.getElementById('galleryPhotoPreviewContainer');
+            const galleryPhotoPreviewImage = document.getElementById('galleryPhotoPreviewImage');
+            const removeGalleryPhotoPreview = document.getElementById('removeGalleryPhotoPreview');
+            const submitGalleryPhotoBtn = document.getElementById('submitGalleryPhotoBtn');
+
+            const onGallerySaveCallback = (cropper) => {
+                const canvas = cropper.getCroppedCanvas();
+                if (!canvas) return;
+                galleryPhotoPreviewImage.src = canvas.toDataURL();
+                galleryPhotoPreviewContainer.style.display = 'block';
+                if(submitGalleryPhotoBtn) submitGalleryPhotoBtn.disabled = false;
+            };
+
+            initializeModal(
+                'galleryCropperModal',
+                'selectGalleryFileBtn',
+                'galleryImageToCrop',
+                document.getElementById('galleryHiddenFileInput'),
+                'saveGalleryCropBtn',
+                null,
+                {
+                    x: document.getElementById('galleryCropX'), y: document.getElementById('galleryCropY'),
+                    width: document.getElementById('galleryCropWidth'), height: document.getElementById('galleryCropHeight')
+                },
+                onGallerySaveCallback
+            );
+
+            if (removeGalleryPhotoPreview) {
+                removeGalleryPhotoPreview.addEventListener('click', () => {
+                    galleryPhotoPreviewContainer.style.display = 'none';
+                    galleryPhotoPreviewImage.src = '';
+                    document.getElementById('galleryHiddenFileInput').value = '';
+                    if(submitGalleryPhotoBtn) submitGalleryPhotoBtn.disabled = true;
+                });
+            }
+
+
+            // --- Логика для лайков и комментариев ---
+            document.querySelectorAll('.feed-item').forEach(item => {
+                const likeBtn = item.querySelector('.like-btn');
+                const commentToggleBtn = item.querySelector('.comment-toggle-btn');
+                const commentsSection = item.querySelector('.comments-section');
+                const commentForm = item.querySelector('.comment-form');
+                const commentsList = item.querySelector('.comments-list');
+                const likesCountSpan = item.querySelector('.likes-count');
+
+                const itemId = item.dataset.itemId;
+                const itemType = item.dataset.itemType;
+
+                if (likeBtn) {
+                    likeBtn.addEventListener('click', async () => {
+                        const formData = new FormData();
+                        formData.append('item_type', itemType);
+                        formData.append('item_id', itemId);
+
+                        const response = await fetch('/api/like', { method: 'POST', body: formData });
+                        if (response.ok) {
+                            likeBtn.classList.toggle('liked');
+                            const currentLikesText = likesCountSpan.innerText || "0";
+                            let currentLikes = parseInt(currentLikesText.trim());
+                            likesCountSpan.innerHTML = `<i class="fa-solid fa-thumbs-up"></i> ${likeBtn.classList.contains('liked') ? currentLikes + 1 : currentLikes - 1}`;
+                        }
+                    });
+                }
+
+                if (commentToggleBtn) {
+                    commentToggleBtn.addEventListener('click', () => {
+                        commentsSection.classList.toggle('active');
+                    });
+                }
+
+                if (commentForm) {
+                    commentForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const input = e.target.querySelector('.comment-input');
+                        const content = input.value.trim();
+                        if (!content) return;
+
+                        const formData = new FormData();
+                        formData.append('item_type', itemType);
+                        formData.append('item_id', itemId);
+                        formData.append('content', content);
+
+                        const response = await fetch('/api/comment', { method: 'POST', body: formData });
+                        if (response.ok) {
+                            const result = await response.json();
+                            const newComment = result.comment;
+                            const commentDiv = document.createElement('div');
+                            commentDiv.classList.add('comment');
+                            commentDiv.innerHTML = `
+                                <img src="/avatar/${newComment.user_id}" class="comment-avatar">
+                                <div class="comment-body">
+                                    <strong>${newComment.username}</strong>
+                                    <p>${newComment.content}</p>
+                                </div>`;
+                            commentsList.appendChild(commentDiv);
+                            input.value = '';
+                        }
+                    });
+                }
+            });
+        });
     </script>
 </body>
 </html>

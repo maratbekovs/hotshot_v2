@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="messages-page">
+    <h2><i class="fa-solid fa-comments"></i> Сообщения</h2>
+    <div class="dialogs-list">
+        {# Начинаем цикл for, чтобы перебрать всех друзей #}
+        {% for friend in friends %}
+        <a href="{{ url_for('chat', friend_id=friend.user_id) }}" class="dialog-item">
+            <img src="{{ url_for('get_avatar', user_id=friend.user_id) }}" alt="Аватар">
+            <div class="dialog-info">
+                <h4>{{ friend.username }}</h4>
+                <p>{{ friend.first_name }} {{ friend.last_name }}</p>
+            </div>
+        </a>
+        {# Этот блок выполнится, если список друзей пуст #}
+        {% else %}
+        <div class="no-content-message">
+            {# ИСПРАВЛЕНИЕ: Добавлен отступ под текстом #}
+            <p style="margin-bottom: 20px;">У вас пока нет друзей, чтобы начать общение.</p>
+            <a href="{{ url_for('find_users') }}" class="auth-btn">Найти друзей</a>
+        </div>
+        {# Закрываем цикл for с помощью endfor #}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

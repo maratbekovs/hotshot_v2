@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="users-page">
+    <h2><i class="fa-solid fa-users"></i> Найти друзей</h2>
+
+    <!-- Новая форма поиска -->
+    <div class="search-form-container">
+        <form method="get" class="search-form">
+            <input type="text" name="q" placeholder="Поиск по никнейму..." value="{{ search_query or '' }}" autocomplete="off">
+            <button type="submit"><i class="fa-solid fa-search"></i></button>
+        </form>
+    </div>
+
+    <div class="users-grid">
+        {% for user in users %}
+        <a href="{{ url_for('view_profile', user_id=user.user_id) }}" class="user-card">
+            <img src="{{ url_for('get_avatar', user_id=user.user_id) }}" alt="Аватар">
+            <div class="user-card-info">
+                <h4>{{ user.username }}</h4>
+                <!-- Имена и фамилии удалены для приватности -->
+            </div>
+        </a>
+        {% else %}
+        <!-- Улучшенное сообщение, если по поиску ничего не найдено -->
+        <div class="no-content-message full-width">
+            {% if search_query %}
+            <p>Пользователи с никнеймом '{{ search_query }}' не найдены.</p>
+            {% else %}
+            <p>Других пользователей пока нет.</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

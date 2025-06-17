@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="notifications-page">
+    <h2><i class="fa-solid fa-bell"></i> Уведомления</h2>
+    <div class="notifications-list">
+        {% for n in notifications %}
+            <div class="notification-item {% if not n.is_read %}unread{% endif %}">
+                <img src="{{ url_for('get_avatar', user_id=n.initiator_id) }}" class="notification-avatar">
+                <div class="notification-content">
+                    <p>
+                        <strong>{{ n.initiator_username }}</strong>
+                        {% if n.notification_type == 'friend_request' %}
+                            отправил(а) вам заявку в друзья.
+                        {% elif n.notification_type == 'friend_accept' %}
+                            принял(а) вашу заявку в друзья.
+                        {% elif n.notification_type == 'new_like' %}
+                            понравился ваш
+                            {% if n.post_id %} пост.
+                            {% elif n.photo_id %} снимок.
+                            {% endif %}
+                        {% elif n.notification_type == 'new_comment' %}
+                            прокомментировал(а) ваш
+                            {% if n.post_id %} пост.
+                            {% elif n.photo_id %} снимок.
+                            {% endif %}
+                        {% endif %}
+                    </p>
+                    <small>{{ n.created_at.strftime('%d %b %Y в %H:%M') }}</small>
+                </div>
+            </div>
+        {% else %}
+            <p>У вас пока нет уведомлений.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -3,16 +3,19 @@
 {% block content %}
 <div class="auth-page">
     <form method="post" class="auth-form">
-        <h2>Вход для администратора</h2>
+        <h2>Вход в аккаунт</h2>
         <div class="form-group">
-            <label for="username"><i class="fa-solid fa-user-shield"></i> Имя пользователя</label>
+            <label for="username"><i class="fa-solid fa-user"></i> Никнейм</label>
             <input type="text" id="username" name="username" required>
         </div>
         <div class="form-group">
-            <label for="password"><i class="fa-solid fa-key"></i> Пароль</label>
+            <label for="password"><i class="fa-solid fa-lock"></i> Пароль</label>
             <input type="password" id="password" name="password" required>
         </div>
         <button type="submit" class="auth-btn">Войти</button>
+        <div class="switch-form">
+            <p>Еще нет аккаунта? <a href="{{ url_for('register') }}">Зарегистрируйтесь</a></p>
+        </div>
     </form>
 </div>
 {% endblock %}

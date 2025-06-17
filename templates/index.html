@@ -1,38 +1,61 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="instructions">
-    <h2>Как это работает?</h2>
-    <div class="steps">
-        <div class="step">
-            <div class="step-icon">
-                <i class="fa-solid fa-cloud-arrow-up"></i>
-            </div>
-            <h3>Загрузи фото</h3>
-            <p>Перейди в раздел "Загрузить" и добавь свои лучшие фотографии</p>
-        </div>
+<div class="main-page-grid">
+    <!-- Левая колонка: основная лента -->
+    <div class="main-feed-column">
+        <div class="profile-feed">
+            {% if not feed %}
+                <div class="profile-card no-content-message">
+                    <h4>Ваша лента пока пуста</h4>
+                    <p>Когда ваши друзья опубликуют что-нибудь, вы увидите это здесь. А пока вы можете найти новых друзей или создать свою первую запись.</p>
+                    <div class="no-content-actions">
+                        <a href="{{ url_for('find_users') }}" class="auth-btn">Найти друзей</a>
+                        <a href="{{ url_for('profile') }}" class="auth-btn file-btn">Создать пост</a>
+                    </div>
+                </div>
+            {% endif %}
 
-        <div class="step">
-            <div class="step-icon">
-                <i class="fa-solid fa-thumbs-up"></i>
-            </div>
-            <h3>Голосуй</h3>
-            <p>Выбирай лучшие снимки из случайных пар в разделе "Голосовать"</p>
-        </div>
-
-        <div class="step">
-            <div class="step-icon">
-                <i class="fa-solid fa-trophy"></i>
-            </div>
-            <h3>Следи за топом</h3>
-            <p>Смотри самые популярные фото в разделе "Топ-10"</p>
+            {% for item in feed %}
+                {# Включаем единый шаблон для отображения поста/фото, передавая ему текущий контекст #}
+                {% include '_feed_item.html' with context %}
+            {% endfor %}
         </div>
     </div>
 
-    <div class="call-to-action">
-        <a href="{{ url_for('vote') }}" class="cta-button">
-            Начать голосовать <i class="fa-solid fa-arrow-right"></i>
-        </a>
+    <!-- Правая колонка: сайдбар -->
+    <div class="main-sidebar-column">
+        <!-- Карточка текущего пользователя -->
+        <div class="sidebar-card profile-card user-profile-shortcut">
+            {# Используем переменную 'user', которую передаем из app.py #}
+            <a href="{{ url_for('profile') }}" class="user-link">
+                <img src="{{ url_for('get_avatar', user_id=user.user_id) }}" class="sidebar-avatar">
+                <div>
+                    <strong>{{ user.username }}</strong>
+                    <small>Перейти в профиль</small>
+                </div>
+            </a>
+        </div>
+
+        <!-- Карточка с предложениями дружбы -->
+        <div class="sidebar-card profile-card">
+            <h4>Возможно, вы знакомы</h4>
+            <ul class="suggestions-list">
+                {% for sug_user in suggestions %}
+                    <li>
+                        <a href="{{ url_for('view_profile', user_id=sug_user.user_id) }}" class="user-link">
+                            <img src="{{ url_for('get_avatar', user_id=sug_user.user_id) }}" class="sidebar-avatar">
+                            <span>{{ sug_user.username }}</span>
+                        </a>
+                        <a href="{{ url_for('add_friend', addressee_id=sug_user.user_id) }}" class="add-friend-sidebar-btn">
+                            <i class="fa-solid fa-user-plus"></i>
+                        </a>
+                    </li>
+                {% else %}
+                    <small>Нет новых предложений.</small>
+                {% endfor %}
+            </ul>
+        </div>
     </div>
 </div>
 {% endblock %}

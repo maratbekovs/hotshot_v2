@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="profile-page-v2">
+    <!-- Левая колонка: информация и друзья -->
+    <div class="profile-sidebar">
+        <div class="profile-card">
+            <div class="profile-avatar-container">
+                <img src="{{ url_for('get_avatar', user_id=user.user_id) }}" alt="Аватар" class="profile-avatar">
+            </div>
+            <div class="profile-main-info">
+                <div class="profile-identity">
+                    <h2>{{ user.username }}</h2>
+                    <p>{{ user.first_name }} {{ user.last_name }}</p>
+                    <div class="privacy-indicator">
+                        {% if user.profile_type == 'public' %}
+                            <i class="fa-solid fa-earth-americas"></i> Открытый профиль
+                        {% else %}
+                            <i class="fa-solid fa-lock"></i> Закрытый профиль
+                        {% endif %}
+                    </div>
+                </div>
+                <span class="status-badge">
+                    {% if user.relationship_status == 'single' %} <i class="fa-solid fa-heart-crack"></i> В активном поиске
+                    {% elif user.relationship_status == 'in_relationship' %} <i class="fa-solid fa-heart"></i> В отношениях
+                    {% else %} <i class="fa-solid fa-circle-question"></i> Статус не указан
+                    {% endif %}
+                </span>
+                <div class="profile-actions-view">
+                    {% if not friendship %}
+                        <a href="{{ url_for('add_friend', addressee_id=user.user_id) }}" class="auth-btn"><i class="fa-solid fa-user-plus"></i> Добавить в друзья</a>
+                    {% elif friendship.status == 'pending' %}
+                        <button class="auth-btn disabled-btn" disabled><i class="fa-solid fa-paper-plane"></i> Заявка отправлена</button>
+                    {% elif friendship.status == 'accepted' %}
+                         <a href="{{ url_for('chat', friend_id=user.user_id) }}" class="auth-btn friend-btn"><i class="fa-solid fa-paper-plane"></i> Написать</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Правая колонка: лента -->
+    <div class="profile-main-content">
+        <div class="profile-feed">
+            {% if not feed %}
+                 <div class="profile-card no-content-message">
+                    <p>У пользователя {{ user.username }} пока нет публичных записей.</p>
+                </div>
+            {% endif %}
+
+            {# ИСПРАВЛЕНИЕ: Используем единый шаблон _feed_item.html для отображения ленты #}
+            {% for item in feed %}
+                {% include '_feed_item.html' with context %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

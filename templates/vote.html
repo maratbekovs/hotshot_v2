@@ -3,28 +3,49 @@
 {% block content %}
 <div class="vote-page">
     <h2>Выбери лучший снимок</h2>
-
-    <form method="post">
-        <div class="vote-container">
-            <div class="photo-box">
-                <button name="choice" value="{{ photo1.photo_id }}" class="vote-btn">
-                    <img src="{{ url_for('get_image', photo_id=photo1.photo_id) }}" alt="Фото 1">
+    <form method="post" class="vote-form-container">
+        <div class="vote-area">
+            <!-- Левая фотография -->
+            <div class="vote-card">
+                <button type="submit" name="choice" value="{{ photo1.photo_id }}" class="vote-img-btn">
+                    <img src="{{ url_for('get_contest_photo', photo_id=photo1.photo_id) }}" alt="Фото для голосования">
                 </button>
+                <div class="vote-user-info">
+                    <a href="{{ url_for('view_profile', user_id=photo1.user_id) }}" class="user-link">
+                        <img src="{{ url_for('get_avatar', user_id=photo1.user_id) }}" class="vote-avatar">
+                        <span>{{ photo1.username }}</span>
+                    </a>
+                    {% if not friendship1 or friendship1.status not in ['accepted', 'pending'] %}
+                    <a href="{{ url_for('add_friend', addressee_id=photo1.user_id) }}" class="add-friend-btn-vote">
+                        <i class="fa-solid fa-user-plus"></i>
+                    </a>
+                    {% endif %}
+                </div>
             </div>
 
-            <div class="vs-center">
-                <div class="vs-label">VS</div>
-            </div>
+            <div class="vs-label">VS</div>
 
-            <div class="photo-box">
-                <button name="choice" value="{{ photo2.photo_id }}" class="vote-btn">
-                    <img src="{{ url_for('get_image', photo_id=photo2.photo_id) }}" alt="Фото 2">
+            <!-- Правая фотография -->
+            <div class="vote-card">
+                <button type="submit" name="choice" value="{{ photo2.photo_id }}" class="vote-img-btn">
+                    <img src="{{ url_for('get_contest_photo', photo_id=photo2.photo_id) }}" alt="Фото для голосования">
                 </button>
+                <div class="vote-user-info">
+                    <a href="{{ url_for('view_profile', user_id=photo2.user_id) }}" class="user-link">
+                        <img src="{{ url_for('get_avatar', user_id=photo2.user_id) }}" class="vote-avatar">
+                        <span>{{ photo2.username }}</span>
+                    </a>
+                    {% if not friendship2 or friendship2.status not in ['accepted', 'pending'] %}
+                    <a href="{{ url_for('add_friend', addressee_id=photo2.user_id) }}" class="add-friend-btn-vote">
+                        <i class="fa-solid fa-user-plus"></i>
+                    </a>
+                    {% endif %}
+                </div>
             </div>
         </div>
 
         <div class="skip-container">
-            <button name="choice" value="skip" class="skip-btn">
+            <button type="submit" name="choice" value="skip" class="skip-btn">
                 Пропустить <i class="fa-solid fa-forward"></i>
             </button>
         </div>

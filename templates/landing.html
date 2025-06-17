@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="instructions">
+    <h2>Добро пожаловать в HotShot!</h2>
+    <p class="subtitle">Знакомьтесь, общайтесь и голосуйте за лучшие фотографии.</p>
+    <div class="steps">
+        <div class="step">
+            <div class="step-icon"><i class="fa-solid fa-user-plus"></i></div>
+            <h3>Создайте профиль</h3>
+            <p>Зарегистрируйтесь, чтобы получить доступ ко всем возможностям платформы.</p>
+        </div>
+        <div class="step">
+            <div class="step-icon"><i class="fa-solid fa-camera-retro"></i></div>
+            <h3>Делитесь моментами</h3>
+            <p>Загружайте свои лучшие фото и участвуйте в голосовании.</p>
+        </div>
+        <div class="step">
+            <div class="step-icon"><i class="fa-solid fa-comments"></i></div>
+            <h3>Находите друзей</h3>
+            <p>Общайтесь с другими пользователями и следите за их успехами.</p>
+        </div>
+    </div>
+    <div class="call-to-action">
+        <a href="{{ url_for('register') }}" class="cta-button">
+            Присоединиться сейчас <i class="fa-solid fa-arrow-right"></i>
+        </a>
+    </div>
+</div>
+{% endblock %}

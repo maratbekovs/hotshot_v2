@@ -2,27 +2,27 @@
 
 {% block content %}
 <div class="top-page">
-    <h2>Топ-10 Фото</h2>
-
-    {% if top_photos and top_photos[0] %}
-    <div class="top1-container">
-        <div class="top1-crown">
-            <i class="fas fa-crown"></i>
-        </div>
-        <div class="top1-card">
-            <img src="{{ url_for('get_image', photo_id=top_photos[0].photo_id) }}" alt="Топ-1 Фото">
-            <div class="top1-votes">{{ top_photos[0].votes }} голосов</div>
-        </div>
-    </div>
-    {% endif %}
+    <h2><i class="fa-solid fa-trophy"></i> Топ-10 фотографий</h2>
 
     <div class="top-list">
-        {% for photo in top_photos[1:] %}
-        <div class="top-item">
-            <div class="top-rank">{{ loop.index + 1 }}</div>
-            <img src="{{ url_for('get_image', photo_id=photo.photo_id) }}" alt="Фото">
-            <p class="top-votes">{{ photo.votes }} голосов</p>
+        {% for photo in top_photos %}
+        <div class="top-item-card">
+            <span class="top-rank">#{{ loop.index }}</span>
+            <a href="{{ url_for('get_contest_photo', photo_id=photo.photo_id) }}" target="_blank">
+                 <img src="{{ url_for('get_contest_photo', photo_id=photo.photo_id) }}" class="top-photo-img">
+            </a>
+            <div class="top-photo-info">
+                <div class="top-votes">
+                    <i class="fa-solid fa-heart"></i> {{ photo.votes }}
+                </div>
+                <a href="{{ url_for('view_profile', user_id=photo.user_id) }}" class="top-user-link">
+                    <img src="{{ url_for('get_avatar', user_id=photo.user_id) }}" class="top-user-avatar">
+                    <span>{{ photo.username }}</span>
+                </a>
+            </div>
         </div>
+        {% else %}
+        <p>Пока нет фотографий для отображения в топе.</p>
         {% endfor %}
     </div>
 </div>

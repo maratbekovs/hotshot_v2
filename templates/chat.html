@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="chat-page">
+    <div class="chat-header">
+        <a href="{{ url_for('messages_list') }}" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+        <img src="{{ url_for('get_avatar', user_id=friend.user_id) }}" alt="Аватар">
+        <h3>{{ friend.username }}</h3>
+    </div>
+    <div class="chat-window" id="chatWindow">
+        {% for message in conversation %}
+            {% if message.sender_id == current_user_id %}
+            <div class="message-bubble sent">
+                <p>{{ message.content }}</p>
+                <span class="message-time">{{ message.sent_at.strftime('%H:%M') }}</span>
+            </div>
+            {% else %}
+            <div class="message-bubble received">
+                <p>{{ message.content }}</p>
+                 <span class="message-time">{{ message.sent_at.strftime('%H:%M') }}</span>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    <div class="chat-form-container">
+        <form class="chat-form" id="chatForm">
+            <input type="text" id="messageInput" name="content" placeholder="Напишите сообщение..." autocomplete="off" required>
+            <button type="submit"><i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatWindow = document.getElementById('chatWindow');
+    const chatForm = document.getElementById('chatForm');
+    const messageInput = document.getElementById('messageInput');
+
+    const friendId = {{ friend.user_id }};
+    const currentUserId = {{ current_user_id }};
+
+    function scrollToBottom() {
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+    scrollToBottom();
+
+    function createMessageBubble(msg) {
+        const bubble = document.createElement('div');
+        bubble.classList.add('message-bubble', 'new-message-animation');
+        bubble.classList.add(msg.sender_id === currentUserId ? 'sent' : 'received');
+
+        const p = document.createElement('p');
+        p.textContent = msg.content;
+
+        const span = document.createElement('span');
+        span.classList.add('message-time');
+        span.textContent = msg.sent_at_short;
+
+        bubble.appendChild(p);
+        bubble.appendChild(span);
+        chatWindow.appendChild(bubble);
+    }
+
+    async function fetchNewMessages() {
+        try {
+            const response = await fetch(`/api/messages/${friendId}`);
+            if (!response.ok) return;
+
+            const data = await response.json();
+            if (data.messages && data.messages.length > 0) {
+                data.messages.forEach(createMessageBubble);
+                scrollToBottom();
+            }
+        } catch (error) {
+            console.error('Ошибка при получении сообщений:', error);
+        }
+    }
+
+    // ИСПРАВЛЕНИЕ: Мы полностью переписываем обработчик отправки формы
+    chatForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const messageText = messageInput.value.trim();
+        if (messageText === '') return;
+
+        // 1. Создаем временный объект сообщения для мгновенного отображения
+        const now = new Date();
+        const sentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+        const tempMessage = {
+            sender_id: currentUserId,
+            content: messageText,
+            sent_at_short: sentTime
+        };
+
+        // 2. Мгновенно отображаем это сообщение на стороне клиента
+        createMessageBubble(tempMessage);
+        scrollToBottom();
+
+        // 3. Очищаем поле ввода
+        messageInput.value = '';
+
+        // 4. Отправляем сообщение на сервер в фоновом режиме
+        try {
+            await fetch(`/api/send_message/${friendId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `content=${encodeURIComponent(messageText)}`
+            });
+            // Если все успешно, сервер сохранит сообщение.
+            // Наш fetchNewMessages его не продублирует, так как он ищет только ВХОДЯЩИЕ.
+        } catch (error) {
+            console.error('Ошибка при отправке сообщения:', error);
+            // В случае ошибки можно добавить логику возврата текста или индикатор ошибки.
+        }
+    });
+
+    setInterval(fetchNewMessages, 3000);
+});
+</script>
+{% endblock %}

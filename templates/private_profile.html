@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="profile-page">
+    <div class="profile-header">
+        <div class="profile-avatar-container">
+            <img src="{{ url_for('get_avatar', user_id=user.user_id) }}" alt="Аватар" class="profile-avatar">
+        </div>
+        <div class="profile-info">
+            <h2>{{ user.username }}</h2>
+            <p>Это закрытый профиль</p>
+        </div>
+        <div class="profile-actions">
+            {% if not friendship %}
+                <a href="{{ url_for('add_friend', addressee_id=user.user_id) }}" class="auth-btn">
+                    <i class="fa-solid fa-user-plus"></i> Добавить в друзья
+                </a>
+            {% elif friendship.status == 'pending' %}
+                <button class="auth-btn disabled-btn" disabled>
+                    <i class="fa-solid fa-paper-plane"></i> Заявка отправлена
+                </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="profile-card private-profile-card">
+        <i class="fa-solid fa-lock"></i>
+        <h3>Профиль закрыт</h3>
+        <p>Чтобы просматривать фотографии и информацию этого пользователя, вы должны быть у него в друзьях.</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,3 +1,5 @@
 flask
 werkzeug
 mysql-connector-python
+bcrypt
+Pillow

@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="profile-page-v2">
+    <!-- Левая колонка: информация, друзья и настройки -->
+    <div class="profile-sidebar">
+        <!-- Карточка с основной информацией -->
+        <div class="profile-card">
+            <div class="profile-avatar-container">
+                <img src="{{ url_for('get_avatar', user_id=user.user_id) }}" alt="Аватар" class="profile-avatar" id="currentAvatar">
+                <button class="edit-avatar-btn" id="editAvatarBtn"><i class="fa-solid fa-camera"></i></button>
+            </div>
+            <div class="profile-main-info">
+                <div class="profile-identity">
+                    <h2>{{ user.username }}</h2>
+                    <p>{{ user.first_name }} {{ user.last_name }}</p>
+                    <div class="privacy-indicator">
+                        {% if user.profile_type == 'public' %}
+                            <i class="fa-solid fa-earth-americas"></i> Открытый профиль
+                        {% else %}
+                            <i class="fa-solid fa-lock"></i> Закрытый профиль
+                        {% endif %}
+                    </div>
+                </div>
+                <span class="status-badge">
+                    {% if user.relationship_status == 'single' %} <i class="fa-solid fa-heart-crack"></i> В активном поиске
+                    {% elif user.relationship_status == 'in_relationship' %} <i class="fa-solid fa-heart"></i> В отношениях
+                    {% else %} <i class="fa-solid fa-circle-question"></i> Статус не указан
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <!-- Карточка с заявками в друзья -->
+        <div class="profile-card">
+            <h3><i class="fa-solid fa-user-group"></i> Заявки в друзья ({{ requests|length }})</h3>
+            {% if requests %}
+                <ul class="friend-requests-list">
+                {% for req in requests %}
+                    <li class="friend-request">
+                        <a href="{{ url_for('view_profile', user_id=req.user_id) }}" class="request-user">
+                            <img src="{{ url_for('get_avatar', user_id=req.user_id) }}" alt="аватар">
+                            <span>{{ req.username }}</span>
+                        </a>
+                        <div class="request-actions">
+                            <a href="{{ url_for('accept_friend', requester_id=req.user_id) }}" class="btn-accept"><i class="fa-solid fa-check"></i></a>
+                            <a href="{{ url_for('decline_friend', requester_id=req.user_id) }}" class="btn-decline"><i class="fa-solid fa-xmark"></i></a>
+                        </div>
+                    </li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <p>У вас нет новых заявок.</p>
+            {% endif %}
+        </div>
+
+        <!-- Карточка с настройками -->
+        <div class="profile-card">
+            <h3><i class="fa-solid fa-gears"></i> Настройки</h3>
+            <!-- Форма редактирования данных -->
+            <form action="{{ url_for('edit_profile') }}" method="post" class="profile-form">
+                <div class="form-group">
+                    <label for="first_name">Имя</label>
+                    <input type="text" name="first_name" value="{{ user.first_name or '' }}">
+                </div>
+                <div class="form-group">
+                    <label for="last_name">Фамилия</label>
+                    <input type="text" name="last_name" value="{{ user.last_name or '' }}">
+                </div>
+                <div class="form-group">
+                    <label for="relationship_status">Статус отношений</label>
+                    <select name="relationship_status">
+                        <option value="not_specified" {% if user.relationship_status == 'not_specified' %}selected{% endif %}>Не указан</option>
+                        <option value="single" {% if user.relationship_status == 'single' %}selected{% endif %}>В активном поиске</option>
+                        <option value="in_relationship" {% if user.relationship_status == 'in_relationship' %}selected{% endif %}>В отношениях</option>
+                    </select>
+                </div>
+                <button type="submit" class="auth-btn">Сохранить инфо</button>
+            </form>
+
+            <!-- Форма настроек приватности -->
+            <form action="{{ url_for('set_profile_privacy') }}" method="post" class="profile-form" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
+                 <label>Приватность профиля</label>
+                <div class="privacy-options">
+                    <label><input type="radio" name="privacy" value="public" {% if user.profile_type == 'public' %}checked{% endif %}> Открытый</label>
+                    <label><input type="radio" name="privacy" value="private" {% if user.profile_type == 'private' %}checked{% endif %}> Закрытый</label>
+                </div>
+                <button type="submit" class="auth-btn">Сохранить приватность</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Правая колонка: создание постов и лента -->
+    <div class="profile-main-content">
+        <!-- БЛОК СОЗДАНИЯ ПОСТОВ С ВКЛАДКАМИ -->
+        <div class="creator-box profile-card">
+            <div class="creator-tabs">
+                <button class="tab-btn active" data-tab="text-creator"><i class="fa-solid fa-font"></i> Создать пост</button>
+                <button class="tab-btn" data-tab="photo-creator"><i class="fa-solid fa-camera"></i> Добавить фото</button>
+            </div>
+
+            <!-- Форма для текстового поста -->
+            <div class="creator-content active" id="text-creator">
+                <form action="{{ url_for('create_post') }}" method="post">
+                    <textarea name="content" placeholder="Что у вас нового, {{ user.username }}?" required></textarea>
+                    <div class="form-actions">
+                        <button type="submit" class="auth-btn">Опубликовать</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Форма для загрузки фото с предпросмотром -->
+            <div class="creator-content" id="photo-creator">
+                <form action="{{ url_for('add_to_gallery') }}" method="post" enctype="multipart/form-data" id="galleryPhotoForm">
+                    <div class="photo-preview-container" id="galleryPhotoPreviewContainer" style="display: none;">
+                        <img src="" alt="Предпросмотр фото" id="galleryPhotoPreviewImage">
+                        <button type="button" class="remove-preview-btn" id="removeGalleryPhotoPreview" title="Удалить фото">&times;</button>
+                    </div>
+
+                    <textarea name="caption" placeholder="Добавьте подпись (необязательно)..."></textarea>
+
+                    <input type="hidden" name="x" id="galleryCropX">
+                    <input type="hidden" name="y" id="galleryCropY">
+                    <input type="hidden" name="width" id="galleryCropWidth">
+                    <input type="hidden" name="height" id="galleryCropHeight">
+                    <input type="file" name="gallery_photo" id="galleryHiddenFileInput" style="display: none;" accept="image/*">
+
+                    <div class="form-actions">
+                         <button type="button" class="auth-btn file-btn" id="selectGalleryFileBtn"><i class="fa-solid fa-image"></i> Выбрать файл</button>
+                         <button type="submit" class="auth-btn" id="submitGalleryPhotoBtn" disabled>Опубликовать фото</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Лента постов и фото -->
+        <div class="profile-feed">
+             {% if not feed %}
+                <div class="profile-card no-content-message">
+                    <p>В вашем профиле пока нет записей. Создайте свой первый пост или загрузите фото!</p>
+                </div>
+            {% endif %}
+
+            {% for item in feed %}
+                {# Передаем в шаблон _feed_item.html текущего пользователя, чтобы можно было проверить его заявки #}
+                {% include '_feed_item.html' with context %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для обрезки аватара -->
+<div class="modal" id="cropperModal">
+    <div class="modal-content">
+        <span class="close-modal" data-modal-id="cropperModal">&times;</span>
+        <h3>Обрежьте ваш аватар</h3>
+        <div class="cropper-container">
+            <img id="imageToCrop" src="">
+        </div>
+        <form action="{{ url_for('upload_avatar') }}" method="post" enctype="multipart/form-data" id="cropForm">
+            <input type="hidden" name="x" id="cropX">
+            <input type="hidden" name="y" id="cropY">
+            <input type="hidden" name="width" id="cropWidth">
+            <input type="hidden" name="height" id="cropHeight">
+            <input type="file" name="avatar" id="hiddenFileInput" style="display: none;">
+            <button type="button" class="auth-btn" id="saveCropBtn">Сохранить аватар</button>
+        </form>
+    </div>
+</div>
+
+<!-- Модальное окно для обрезки фото галереи -->
+<div class="modal" id="galleryCropperModal">
+    <div class="modal-content">
+        <span class="close-modal" data-modal-id="galleryCropperModal">&times;</span>
+        <h3>Обрежьте ваше фото (1x1)</h3>
+        <div class="cropper-container">
+            <img id="galleryImageToCrop" src="">
+        </div>
+        <button type="button" class="auth-btn" id="saveGalleryCropBtn">Продолжить</button>
+    </div>
+</div>
+{% endblock %}

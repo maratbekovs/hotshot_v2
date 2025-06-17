@@ -1,0 +1,97 @@
+<div class="feed-item profile-card" data-item-id="{{ item.item_id }}" data-item-type="{{ item.type }}">
+    <!-- Блок с информацией об авторе и дате публикации -->
+    <div class="feed-item-header">
+        <div class="feed-author">
+            <a href="{{ url_for('view_profile', user_id=item.user_id) }}">
+                <img src="{{ url_for('get_avatar', user_id=item.user_id) }}" class="feed-avatar">
+            </a>
+            <div>
+                <a href="{{ url_for('view_profile', user_id=item.user_id) }}" class="author-link">
+                    <strong>{{ item.username }}</strong>
+                </a>
+                <small>{{ item.created_at.strftime('%d %b %Y в %H:%M') }}</small>
+            </div>
+        </div>
+        <!-- Кнопка удаления (видна только автору) -->
+        {% if item.user_id == session['user_id'] %}
+        <div class="delete-action">
+            {% if item.type == 'post' %}
+            <a href="{{ url_for('delete_post_route', post_id=item.item_id) }}" onclick="return confirm('Удалить этот пост?');"><i class="fa-solid fa-trash"></i></a>
+            {% elif item.type == 'photo' %}
+             <a href="{{ url_for('delete_photo_route', photo_id=item.item_id) }}" onclick="return confirm('Удалить это фото?');"><i class="fa-solid fa-trash"></i></a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Блок с контентом (текст или фото) -->
+    {% if item.type == 'post' %}
+        <div class="feed-content-text"><p>{{ item.content }}</p></div>
+    {% elif item.type == 'photo' %}
+        {% if item.content %}
+            <div class="feed-content-caption top-caption"><p>{{ item.content }}</p></div>
+        {% endif %}
+        <div class="feed-content-photo">
+            <img src="{{ url_for('get_contest_photo', photo_id=item.item_id) }}" alt="Фото из галереи">
+        </div>
+        <!-- Умная кнопка для отправки на конкурс -->
+        <div class="photo-actions">
+            {% set has_active_submission = user.active_submission_id is not none %}
+
+            {% if item.contest_status == 'pending' %}
+                <!-- Если ЭТО фото на модерации, показываем кнопку отмены -->
+                <a href="{{ url_for('cancel_nomination_route', photo_id=item.item_id) }}" class="auth-btn nominate-btn cancel-btn">
+                    <i class="fa-solid fa-xmark"></i> Отменить заявку
+                </a>
+            {% elif item.contest_status == 'approved' %}
+                <!-- Если ЭТО фото одобрено, показываем статус -->
+                <button class="auth-btn nominate-btn disabled-btn" disabled>
+                    <i class="fa-solid fa-check"></i> Участвует в конкурсе
+                </button>
+            {% elif has_active_submission %}
+                <!-- Если активна ДРУГАЯ заявка, блокируем эту кнопку -->
+                <button class="auth-btn nominate-btn disabled-btn" disabled title="У вас уже есть фото на конкурсе">
+                    <i class="fa-solid fa-trophy"></i> Слот занят
+                </button>
+            {% else %}
+                <!-- Если слотов нет и фото не участвует, показываем кнопку отправки -->
+                <a href="{{ url_for('nominate_photo', photo_id=item.item_id) }}" class="auth-btn nominate-btn">
+                    <i class="fa-solid fa-trophy"></i> Отправить на конкурс
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <!-- Индикаторы лайков и комментариев -->
+    <div class="feed-stats">
+        <span class="likes-count"><i class="fa-solid fa-thumbs-up"></i> {{ item.likes_count }}</span>
+        <span class="comments-count">{{ item.comments|length }} комментариев</span>
+    </div>
+
+    <!-- Кнопки действий (Лайк, Комментировать) -->
+    <div class="feed-actions">
+        <button class="action-btn like-btn {% if item.user_has_liked %}liked{% endif %}">
+            <i class="fa-solid fa-heart"></i> Нравится
+        </button>
+        <button class="action-btn comment-toggle-btn"><i class="fa-regular fa-comment"></i> Комментировать</button>
+    </div>
+
+    <!-- Секция комментариев (скрыта по умолчанию) -->
+    <div class="comments-section">
+        <div class="comments-list">
+            {% for comment in item.comments %}
+                <div class="comment">
+                    <img src="{{ url_for('get_avatar', user_id=comment.user_id) }}" class="comment-avatar">
+                    <div class="comment-body">
+                        <strong>{{ comment.username }}</strong>
+                        <p>{{ comment.content }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <form class="comment-form">
+            <input type="text" class="comment-input" placeholder="Написать комментарий...">
+            <button type="submit">Отправить</button>
+        </form>
+    </div>
+</div>
